@@ -1,6 +1,6 @@
-# 植物
+# 植物大战僵尸
 
-This template should help get you started developing with Vue 3 in Vite.
+该项目使用的是vue3+vite
 
 ## Recommended IDE Setup
 
