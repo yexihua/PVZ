@@ -1,6 +1,6 @@
 <template>
   <span class="menu" v-show="props.visable">
-    <div class="content"><slot /></div>
+    <slot/>
 
     <button class="back" @click="closeing">返 回</button>
   </span>
@@ -29,7 +29,7 @@ const closeing = () => {
   transform: translate(-50%, -50%);
 }
 .content{
-    margin: 120px 100px 0px;
+    margin: 130px 100px 0px;
 }
 .back {
   background: url("../assets/bgc/button.png") no-repeat;
