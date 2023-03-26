@@ -8,6 +8,10 @@ const router = createRouter({
       component: () => import("../views/HomePage.vue")
     },
     {
+      path: '/gamePage',
+      component: () => import("../views/GamePage.vue")
+    },
+    {
       // path: '/about',
       // name: 'about',
       // route level code-splitting
