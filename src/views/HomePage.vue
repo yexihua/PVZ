@@ -13,7 +13,9 @@
       <div v-show="visable == 1" class="chooseGame">
         第一大关
         <div class="barrier">
-          <router-link class="censorship" :to="'/gamePage?id=1'+i" v-for="(i, index) in 10" :key="index">第{{ i }}关</router-link>
+          <router-link class="censorship" :to="'/gamePage?id=' + i" v-for="(i, index) in 1" :key="index">
+            第{{ i }}关
+          </router-link>
         </div>
       </div>
 
@@ -25,7 +27,7 @@
         <div @click="gameclose" v-show="visable == 3" class="textExit">Yes</div>
       </div>
     </MessageBox>
-    
+
     <audio loop ref="audioRef">
       <source src="../assets/music/home.ogg" type="audio/ogg" />
     </audio>
@@ -145,5 +147,9 @@ const Music = () => {//音频开关
   width: 60px;
   cursor: pointer;
   text-decoration: none;
+}
+
+.chooseText {
+  color: #86909c;
 }
 </style>
