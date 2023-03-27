@@ -7,7 +7,7 @@
       <area href="javascript:void(0)" shape="rect" coords="800, 495, 879, 548" @click="exit" />
     </map>
     <img src="../assets/bgc/help.png" alt="" v-show="helpAbel" class="helpimg" @click="helpClose">
-    <img src="../assets/bgc/start.png" alt="" class="start" @click="startGame">
+    <div class="start" @click="startGame"></div>
 
     <MessageBox :visable="visable != 0 ? true : false" @close="closeChange">
       <div v-show="visable == 1" class="chooseGame">
@@ -59,12 +59,15 @@ const exit = () => {//退出点击
 const closeChange = () => {//菜单弹出返回
   visable.value = 0;
 };
-const gameclose = () => {
+const gameclose = () => {//退出游戏
   window.close()
 }
-const startGame = () => {
-  visable.value = 1
+const startGame = () => {//开始游戏
+  if(!visable.value){
+    visable.value = 1
+  }
 }
+
 const Music = () => {//音频开关
   useStores.bgmChange()
   if (useStores.bgm) {
@@ -116,12 +119,19 @@ const Music = () => {//音频开关
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
+  z-index: 999;
 }
 
 .start {
+  width: 331px;
+  height: 146px;
+  background: url("../assets/bgc/start.png");
   position: absolute;
   left: 474px;
   top: 80px;
+}
+.start-over{
+  background: url("../assets/bgc/start0.png");
 }
 
 .chooseGame {
