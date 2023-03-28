@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+// import { useStore } from "../stores/counter"
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -21,5 +22,9 @@ const router = createRouter({
     }
   ]
 })
-
+// router.beforeEach((to, from, next) => {
+//   const useStores = useStore();//获取pinia导出的实例
+//   useStores.setBgm(sessionStorage.getItem("bgmStaus"))
+//   next()
+// })
 export default router

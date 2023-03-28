@@ -1,9 +1,8 @@
 <template>
-  <span class="menu" v-show="props.visable">
-    <slot/>
-
+  <div class="menu" v-show="props.visable">
+    <slot></slot>
     <button class="back" @click="closeing">返 回</button>
-  </span>
+  </div>
 </template>
 
 <script setup>

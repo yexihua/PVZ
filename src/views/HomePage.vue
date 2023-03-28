@@ -19,7 +19,7 @@
         </div>
       </div>
 
-      <a-checkbox @change="Music" class="text" v-show="visable == 2"><span>开启背景音乐</span></a-checkbox>
+      <a-checkbox @change="Music" class="text" v-show="visable == 2" v-model="status.bgm"><span>开启背景音乐</span></a-checkbox>
 
       <div v-show="visable == 3" class="gameExit">
         <span>确认要退出么</span>
@@ -37,10 +37,10 @@
 <script setup>
 import MessageBox from "../components/MessageBox.vue";
 import { onMounted, reactive, ref } from "vue";
-import { useCounterStore } from "../stores/counter"
-import { useRoute } from "vue-router";
-const router = useRoute();//获取路由实例
-const useStores = useCounterStore();//获取pinia导出的实例
+import { onBeforeRouteLeave, useRoute } from "vue-router";
+const status = reactive({
+  bgm: false//背景音乐控制
+})
 const helpAbel = ref(false);//帮助打开
 const visable = ref(0);//菜单栏打开
 const audioRef = ref();//音频实例
@@ -63,14 +63,25 @@ const gameclose = () => {//退出游戏
   window.close()
 }
 const startGame = () => {//开始游戏
-  if(!visable.value){
+  if (!visable.value) {
     visable.value = 1
   }
 }
-
+onMounted(() => {
+  if(sessionStorage.getItem("bgmStaus")){
+    const musicOpen = JSON.parse(sessionStorage.getItem("bgmStaus")).bgm
+    status.bgm=musicOpen
+    if (musicOpen) {
+    audioRef.value.play()
+  }
+  }
+})
+// 页面跳转
+onBeforeRouteLeave((to, from) => {
+  sessionStorage.setItem("bgmStaus", JSON.stringify({bgm:status.bgm}))
+})
 const Music = () => {//音频开关
-  useStores.bgmChange()
-  if (useStores.bgm) {
+  if (status.bgm) {
     audioRef.value.play()
   } else {
     audioRef.value.currentTime = 0;
@@ -130,7 +141,8 @@ const Music = () => {//音频开关
   left: 474px;
   top: 80px;
 }
-.start-over{
+
+.start-over {
   background: url("../assets/bgc/start0.png");
 }
 

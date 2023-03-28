@@ -1,36 +1,69 @@
 <template>
     <div class="game">
-        <audio loop ref="audioRef">
+        <audio loop ref="audioGame">
             <source src="../assets/music/game-bgc.ogg" type="audio/ogg" />
         </audio>
-        <div class="game-tip" v-show="tipStart"></div>
-        <div class="menu" @click="menu">菜单</div>
-        <!-- <img src="../assets/bgc/Button.png" alt=""> -->
-        <!-- <MessageBox></MessageBox> -->
+        <img src="../assets/bgc/game-tip.gif" alt="" v-if="tipStart" class="game-tip">
+        <div class="menuOpen" @click="menuOpen" v-show="allVisable">菜单</div>
+        <MessageBox :visable="visable" @close="closeChange">
+            <a-checkbox @change="Music" class="text" v-model="status.bgm"><span>开启背景音乐</span></a-checkbox>
+            <router-link to="/" class="back-menu">返回主菜单</router-link>
+        </MessageBox>
     </div>
 </template>
 
 <script setup>
-import { useCounterStore } from "../stores/counter"
-import { ref, onMounted } from "vue"
+import { ref, onMounted, reactive } from "vue"
 import MessageBox from "../components/MessageBox.vue";
+import { onBeforeRouteLeave, useRoute } from "vue-router";
 
-const useStores = useCounterStore();//获取pinia导出的实例
-const visable = ref(false);//卡片，菜单栏状态
+const status = reactive({
+    bgm: false//背景音乐控制
+})
+const audioGame = ref();//音频实例
+const allVisable = ref(false);//卡片，菜单栏状态
+const visable = ref(false)//菜单打开
 const tipStart = ref(false)//提示语状态
-const menu=()=>{
-    visable.value=true
+const menuOpen = () => {
+    visable.value = true
 }
 const tipOpen = setTimeout(() => {
     tipStart.value = true
 }, 5500)
 const tipclose = setTimeout(() => {
     tipStart.value = false
-    visable.value=true
+    allVisable.value = true
 }, 8500)
+// 页面跳转或刷新触发
 onbeforeunload = () => {
     clearTimeout(tipOpen, tipOpen)
 }
+onBeforeRouteLeave((to, from) => {
+    sessionStorage.setItem("bgmStaus", JSON.stringify({ bgm: status.bgm }))
+
+})
+onMounted(()=>{
+    if (sessionStorage.getItem("bgmStaus")) {
+        const musicOpen = JSON.parse(sessionStorage.getItem("bgmStaus")).bgm
+        status.bgm = musicOpen
+        if (musicOpen) {
+            audioGame.value.play()
+        }
+    }
+})
+const closeChange = () => {//菜单弹出返回
+    visable.value = 0;
+};
+const Music = () => {//音频开关
+    if (status.bgm) {
+        audioGame.value.play()
+    } else {
+        audioGame.value.currentTime = 0;
+        audioGame.value.pause();
+    }
+}
+
+
 </script>
 <style scoped>
 @keyframes bgc-move {
@@ -55,6 +88,17 @@ onbeforeunload = () => {
     }
 }
 
+.text {
+    text-align: center;
+    font-size: 24px;
+    letter-spacing: 5px;
+    margin: 130px 100px 20px;
+}
+
+.text span {
+    color: white;
+}
+
 .game {
     position: relative;
     width: 100%;
@@ -63,15 +107,17 @@ onbeforeunload = () => {
 }
 
 .game-tip {
-    width: 250px;
+    /* width: 250px;
     height: 108px;
-    background: url("../assets/bgc/game-tip.gif");
+    background: url("../assets/bgc/game-tip.gif"); */
     position: absolute;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
 }
-.menu{
+
+.menuOpen {
+    cursor: pointer;
     position: absolute;
     top: 0px;
     right: 0px;
@@ -84,6 +130,15 @@ onbeforeunload = () => {
     box-sizing: border-box;
     width: 113px;
     height: 41px;
-    background: url("../assets/bgc/Button.png") no-repeat;
+    background: url("../assets/bgc/button1.png") no-repeat;
+}
+
+.back-menu {
+    text-decoration: none;
+    color: #fdbd5c;
+    display: flex;
+    justify-content: center;
+    font-size: 24px;
+    letter-spacing: 5px;
 }
 </style>
