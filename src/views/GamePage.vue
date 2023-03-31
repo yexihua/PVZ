@@ -11,7 +11,9 @@
             <router-link to="/" class="back-menu">返回主菜单</router-link>
         </MessageBox>
         <LeftCard :visable="gameStatus.cardVisable"></LeftCard>
-        <div class="sun" v-show="gameStatus.sunEcptoma" @click="sunClose"></div>
+        <div class="sun" v-show="gameStatus.sunEcptoma" @click="sunClose"
+            :style="{ left: gameStatus.sunPosition.x, top: gameStatus.sunPosition.y || '-78px' }">
+        </div>
     </div>
 </template>
 
@@ -21,21 +23,31 @@ import LeftCard from "../components/LeftCard.vue";
 import { ref, onMounted, reactive } from "vue"
 import MessageBox from "../components/MessageBox.vue";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
-
+import { useStore } from "../stores/counter"
+const store = useStore()//pinia实例
 const gameRef = ref()
 const status = reactive({
     bgm: false//背景音乐控制
 })
+// 获取随机数整数
+const getNumber = (m, n) => {
+    return Math.floor(Math.random() * (m - n + 1)) + n + 'px';
+}
 const gameStatus = reactive({
     menuVisable: false,//菜单可见
     chooseVisable: false,//选择卡片可见
     cardVisable: false,//卡片可见
-    sunEcptoma: false,
+    sunEcptoma: true,//阳光可见
+    sunPosition: {
+        x: getNumber(820, 200),
+        Y: null
+    }
 })
 const audioGame = ref();//音频实例
 const chooseOver = ref(false)//选择卡片完毕
 const visable = ref(false)//菜单打开
 const tipStart = ref(false)//提示语状态
+var sunDown;
 const menuOpen = () => {
     visable.value = true
 }
@@ -62,6 +74,9 @@ onMounted(() => {
 })
 const sunClose = () => {
     gameStatus.sunEcptoma = false
+    store.sunChange(50)
+    gameStatus.sunPosition.x = getNumber(820, 200)
+    gameStatus.sunPosition.y = null
 }
 const closeChange = () => {//菜单弹出返回
     visable.value = 0;
@@ -83,13 +98,23 @@ const chooseVisableChange = () => {
     const tipclose = setTimeout(() => {
         tipStart.value = false
         gameStatus.cardVisable = true
+        sunDown = setInterval(() => {
+            gameStatus.sunPosition.y = getNumber(500, 100)
+            const disappear = setTimeout(() => {
+                gameStatus.sunEcptoma = false
+                gameStatus.sunPosition.x = getNumber(820, 200)
+                gameStatus.sunPosition.y = null
+                clearTimeout(disappear)
+            }, 5000)
+            const appear=setTimeout(()=>{
+                gameStatus.sunEcptoma = true
+                clearTimeout(appear)
+            },7000)
+        }, 11000)
         clearTimeout(tipOpen, tipclose)
     }, 3500)
 }
-// 获取随机数整数
-const getNumber = (m, n) => {
-    return Math.floor(Math.random() * (m - n + 1)) + n;
-}
+
 </script>
 <style scoped>
 @keyframes bgc-move {
@@ -173,5 +198,7 @@ const getNumber = (m, n) => {
     height: 78px;
     background: url('../assets/Sun.gif');
     position: absolute;
+
+    transition: all 3s;
 }
 </style>

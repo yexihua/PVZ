@@ -4,5 +4,6 @@ body {
   height: 100vh;
   margin: 0px;
   background-color: #FFF8E8;
+  --primary-color: Math.floor(Math.random() * (m - n + 1)) + n;;
 
 }

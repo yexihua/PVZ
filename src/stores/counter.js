@@ -2,6 +2,7 @@ import { ref, computed, reactive } from 'vue'
 import { defineStore } from 'pinia'
 
 export const useStore = defineStore('counter', () => {
+  const initialSun=ref(50);
   const has = computed(() => {
     let arr = []
     for (let i in plant) {
@@ -90,5 +91,8 @@ export const useStore = defineStore('counter', () => {
       }
     }
   }
-  return { has,chooseChange,start,gameCard }
+  function sunChange(e){
+    initialSun.value+=e
+  }
+  return { has,chooseChange,start,gameCard,initialSun,sunChange }
 })

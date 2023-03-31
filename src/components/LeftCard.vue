@@ -5,7 +5,7 @@
                 {{ i.consume }}
             </div>        
         </div>
-        <div class="Sun">50</div>
+        <div class="Sun">{{ usestore.initialSun }}</div>
     </div>
 </template>
 <script setup>
