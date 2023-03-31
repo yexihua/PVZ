@@ -4,6 +4,12 @@
             <source src="../assets/music/game-bgc.ogg" type="audio/ogg" />
         </audio>
         <img src="../assets/bgc/game-tip.gif" alt="" v-if="tipStart" class="game-tip">
+
+        <div class="zombie" v-if="gameStatus.chooseVisable">
+            <span class="zombiePeople" v-for="i in createCorpse()" :key="i.name"
+                :style="{ background: `url(${getImageUrl(i.standPath)})`,left:getNumber(230, 0) + 'px',top:getNumber(380, 0) + 'px' }"></span>
+        </div>
+
         <div class="menuOpen" @click="menuOpen" v-show="gameStatus.menuVisable">菜单</div>
         <ChooseCard :visable="gameStatus.chooseVisable" @choose-close="chooseVisableChange"></ChooseCard>
         <MessageBox :visable="visable" @close="closeChange">
@@ -31,15 +37,28 @@ const status = reactive({
 })
 // 获取随机数整数
 const getNumber = (m, n) => {
-    return Math.floor(Math.random() * (m - n + 1)) + n + 'px';
+    return Math.floor(Math.random() * (m - n + 1)) + n;
+}
+// 生成僵尸对应id
+const createCorpse = () => {
+    let arr = []
+    for (let i = 0; i < 10; i++) {
+        let corpseId = getNumber(2, 1)
+        for (let k in store.corpse) {
+            if (store.corpse[k].id == corpseId) {
+                arr.push(store.corpse[k])
+            }
+        }
+    }
+    return arr
 }
 const gameStatus = reactive({
     menuVisable: false,//菜单可见
-    chooseVisable: false,//选择卡片可见
+    chooseVisable: false,//选择卡片,出战僵尸可见
     cardVisable: false,//卡片可见
     sunEcptoma: true,//阳光可见
     sunPosition: {
-        x: getNumber(820, 200),
+        x: getNumber(820, 200) + 'px',
         Y: null
     }
 })
@@ -70,12 +89,11 @@ onMounted(() => {
             audioGame.value.play()
         }
     }
-
 })
 const sunClose = () => {
     gameStatus.sunEcptoma = false
     store.sunChange(50)
-    gameStatus.sunPosition.x = getNumber(820, 200)
+    gameStatus.sunPosition.x = getNumber(820, 200) + 'px'
     gameStatus.sunPosition.y = null
 }
 const closeChange = () => {//菜单弹出返回
@@ -89,6 +107,9 @@ const Music = () => {//音频开关
         audioGame.value.pause();
     }
 }
+const getImageUrl = (path) => {//获取文件路径
+    return new URL(`../assets/${path}`, import.meta.url).href
+}
 const chooseVisableChange = () => {
     gameStatus.chooseVisable = false
     chooseOver.value = true
@@ -99,17 +120,17 @@ const chooseVisableChange = () => {
         tipStart.value = false
         gameStatus.cardVisable = true
         sunDown = setInterval(() => {
-            gameStatus.sunPosition.y = getNumber(500, 100)
+            gameStatus.sunPosition.y = getNumber(500, 100) + 'px'
             const disappear = setTimeout(() => {
                 gameStatus.sunEcptoma = false
-                gameStatus.sunPosition.x = getNumber(820, 200)
+                gameStatus.sunPosition.x = getNumber(820, 200) + 'px'
                 gameStatus.sunPosition.y = null
                 clearTimeout(disappear)
             }, 5000)
-            const appear=setTimeout(()=>{
+            const appear = setTimeout(() => {
                 gameStatus.sunEcptoma = true
                 clearTimeout(appear)
-            },7000)
+            }, 7000)
         }, 11000)
         clearTimeout(tipOpen, tipclose)
     }, 3500)
@@ -200,5 +221,20 @@ const chooseVisableChange = () => {
     position: absolute;
 
     transition: all 3s;
+}
+
+.zombie {
+    position: absolute;
+    left: 500px;
+    top: 50px;
+    height: 550px;
+    width: 400px;
+}
+
+.zombiePeople {
+    position: absolute;
+    width: 166px;
+    height: 144px;
+    display: inline-block;
 }
 </style>
