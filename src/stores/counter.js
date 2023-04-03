@@ -4,7 +4,7 @@ import { defineStore } from 'pinia'
 export const useStore = defineStore('counter', () => {
 
   const initialSun = ref(50);//阳光数目
-  const plant = reactive({//植物
+  const plant =reactive({//植物
     Peashooter: {
       name: "豌豆射手",
       burial: 7500,//冷却
@@ -16,6 +16,7 @@ export const useStore = defineStore('counter', () => {
       interval: 1400,//攻击间隔
       path: "plantCard/Peashooter.png",//卡片路径
       choosePath: "plantCard/PeashooterG.png",//选中状态下的卡片路径
+      plantPath:'plant/Peashooter/Peashooter.gif'
 
     },
     SunFlower: {
@@ -26,8 +27,8 @@ export const useStore = defineStore('counter', () => {
       Blood: 300,
       choose: false,//是否被选中
       burial: 7500,//冷却
-      interval: 24000,//生产间隔
-
+      interval: 240000,//生产间隔
+      plantPath:'plant/SunFlower/SunFlower.gif',
       path: "plantCard/SunFlower.png",
       choosePath: "plantCard/SunFlowerG.png",//选中状态下的卡片路径
 
@@ -36,26 +37,27 @@ export const useStore = defineStore('counter', () => {
       name: "坚果墙",
       consume: 50,//消耗阳光
       aggressivity: 0,//攻击力
-      have: true,
+      have: false,
       choose: false,//是否被选中
       burial: 3000,//冷却
       Blood: 4000,
       path: "plantCard/WallNut.png",
       choosePath: "plantCard/WallNutG.png",//选中状态下的卡片路径
+      plantPath:'plant/WallNut/WallNut.gif',
 
     },
-    CherryBomb: {
-      name: "樱桃炸弹",
-      consume: 150,//消耗阳光
-      aggressivity: 1800,//攻击力
-      have: false,
-      choose: false,//是否被选中
-      Blood: 300,
-      burial: 5000,//冷却
-      path: "plantCard/CherryBomb.png",
-      choosePath: "plantCard/CherryBombG.png",//选中状态下的卡片路径
+    // CherryBomb: {
+    //   name: "樱桃炸弹",
+    //   consume: 150,//消耗阳光
+    //   aggressivity: 1800,//攻击力
+    //   have: false,
+    //   choose: false,//是否被选中
+    //   Blood: 300,
+    //   burial: 5000,//冷却
+    //   path: "plantCard/CherryBomb.png",
+    //   choosePath: "plantCard/CherryBombG.png",//选中状态下的卡片路径
 
-    },
+    // },
   })
   const corpse = reactive({
     normalZombie: {
@@ -69,7 +71,6 @@ export const useStore = defineStore('counter', () => {
       standPath: 'corpse/ConeheadZombie/ConeheadZombie.gif'
     },
   })
-  const plantReserved=plant
 
   const has = computed(() => {//已经拥有的植物
     let arr = []
@@ -110,5 +111,10 @@ export const useStore = defineStore('counter', () => {
   function sunChange(e) {//阳光数目变更
     initialSun.value += e
   }
-  return { has, chooseChange, start, gameCard, initialSun, sunChange, corpse,plantReserved }
+ function initializationPlant(){
+  for(let i in plant){
+    plant[i].choose=false
+  }
+ }
+  return { has,start,gameCard, initialSun, corpse, chooseChange,sunChange,initializationPlant}
 })
