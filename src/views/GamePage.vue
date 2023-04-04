@@ -21,29 +21,17 @@
             <router-link to="/" class="back-menu">返回主菜单</router-link>
         </MessageBox>
         <!-- 左侧卡片 -->
-        <LeftCard :visable="gameStatus.cardVisable"></LeftCard>
+        <GameInteraction v-show="gameStatus.cardVisable"></GameInteraction>
         <!-- 自然阳光掉落 -->
         <div class="sun" v-show="gameStatus.sunEcptoma" @click="sunClose"
             :style="{ left: gameStatus.sunPosition.x, top: gameStatus.sunPosition.y || '-78px' }">
-        </div>
-        <!-- 关卡草坪 -->
-        <div class="grass" v-if="gameStatus.cardVisable">
-            <!-- 生成僵尸 -->
-            <template v-if="gameStatus.entrance[0]">
-                <div class="corpse" v-for="i in gameStatus.entrance" :key="i.identifier"
-                    :style="{ left: i.x + 'px', top: i.y + 'px', background: `url(${getImageUrl(i.standPath)})` }"></div>
-            </template>
-        </div>
-        <!-- 关卡失败提示语 -->
-        <div @click="gameback" class="fail" v-if="gameStatus.success == false">
-
         </div>
     </div>
 </template>
 
 <script setup>
 import ChooseCard from "../components/ChooseCard.vue"
-import LeftCard from "../components/LeftCard.vue";
+import GameInteraction from "../components/GameInteraction.vue";
 import { ref, onMounted, reactive } from "vue"
 import MessageBox from "../components/MessageBox.vue";
 import { onBeforeRouteLeave, useRouter } from "vue-router";
@@ -74,16 +62,8 @@ const gameStatus = reactive({
         x: getNumber(820, 200) + 'px',
         Y: null
     },
-    entrance: [],//要生成的僵尸
-    entranceNumber: 1,//要生成的僵尸数
-    wave: 1,//第几波僵尸
-    success: null
 })
 
-// 关卡失败返回主界面
-const gameback = () => {
-    router.push("/")
-}
 
 // 生成僵尸对应id
 const createCorpse = () => {
@@ -160,17 +140,6 @@ const chooseVisableChange = () => {
                 }
             }
         }, 20000)
-        main = setInterval(() => {//游戏运行定时器
-            if (gameStatus.entrance[0]) {
-                for (let i in gameStatus.entrance) {
-                    gameStatus.entrance[i].x -= 1.5
-                    if (gameStatus.entrance[i].x <= -50) {
-                        gameStatus.success = false
-                        clearInterval(main)
-                    }
-                }
-            }
-        }, 100);
         clearTimeout(tipOpen, tipclose)
     }, 3500)
 }
@@ -178,7 +147,7 @@ const chooseVisableChange = () => {
 onBeforeRouteLeave((to, from) => {
     sessionStorage.setItem("bgmStaus", JSON.stringify({ bgm: status.bgm }))
     clearTimeout(closeCard, main)
-    clearInterval(main, sunDown, corpseGo)
+    clearInterval(sunDown, corpseGo)
     store.initializationPlant()
 })
 onMounted(() => {
@@ -293,29 +262,6 @@ onMounted(() => {
     width: 166px;
     height: 144px;
     display: inline-block;
-}
-
-.grass {
-    position: absolute;
-    top: 0px;
-    width: 900px;
-    height: 600px;
-    overflow: hidden;
-}
-
-.corpse {
-    position: absolute;
-    width: 166px;
-    height: 144px;
-    transition: all 0.1s;
-}
-
-.fail {
-    background: url("../assets/bgc/ZombiesWon.png") no-repeat center center;
-    position: absolute;
-    z-index: 999;
-    width: 100%;
-    height: 100%;
 }
 
 </style>
