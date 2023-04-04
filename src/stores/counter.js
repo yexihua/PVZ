@@ -4,10 +4,12 @@ import { defineStore } from 'pinia'
 export const useStore = defineStore('counter', () => {
 
   const initialSun = ref(50);//阳光数目
-  const plant =reactive({//植物
+  const plant = reactive({//植物
     Peashooter: {
       name: "豌豆射手",
       burial: 7500,//冷却
+      kind:"fight",//种类
+
       consume: 100,//消耗阳光
       aggressivity: 10,//攻击力
       Blood: 50,//血量
@@ -16,48 +18,32 @@ export const useStore = defineStore('counter', () => {
       interval: 1400,//攻击间隔
       path: "plantCard/Peashooter.png",//卡片路径
       choosePath: "plantCard/PeashooterG.png",//选中状态下的卡片路径
-      plantPath:'plant/Peashooter/Peashooter.gif'
-
+      plantPath: 'plant/Peashooter/Peashooter.gif',
+      product: [],//生成物
+      time:0,//生成物计时
+      productPath:"product/PB00.gif",//生成物路径
+      productWidth:56,//生成物宽度
+      productHeigth:34,//生成物高度
     },
     SunFlower: {
       name: "向日葵",
+      kind:"produce",
       consume: 50,//消耗阳光
       aggressivity: 0,//攻击力
       have: true,
       Blood: 300,
       choose: false,//是否被选中
       burial: 7500,//冷却
-      interval: 240000,//生产间隔
-      plantPath:'plant/SunFlower/SunFlower.gif',
+      interval: 24000,//攻击间隔
+      plantPath: 'plant/SunFlower/SunFlower.gif',
       path: "plantCard/SunFlower.png",
       choosePath: "plantCard/SunFlowerG.png",//选中状态下的卡片路径
-
+      product: [],//生成物
+      time:0,
+      productPath:"product/Sun.gif",
+      productWidth:78,//生成物宽度
+      productHeigth:78,//生成物高度
     },
-    WallNut: {
-      name: "坚果墙",
-      consume: 50,//消耗阳光
-      aggressivity: 0,//攻击力
-      have: false,
-      choose: false,//是否被选中
-      burial: 3000,//冷却
-      Blood: 4000,
-      path: "plantCard/WallNut.png",
-      choosePath: "plantCard/WallNutG.png",//选中状态下的卡片路径
-      plantPath:'plant/WallNut/WallNut.gif',
-
-    },
-    // CherryBomb: {
-    //   name: "樱桃炸弹",
-    //   consume: 150,//消耗阳光
-    //   aggressivity: 1800,//攻击力
-    //   have: false,
-    //   choose: false,//是否被选中
-    //   Blood: 300,
-    //   burial: 5000,//冷却
-    //   path: "plantCard/CherryBomb.png",
-    //   choosePath: "plantCard/CherryBombG.png",//选中状态下的卡片路径
-
-    // },
   })
   const corpse = reactive({
     normalZombie: {
@@ -111,10 +97,10 @@ export const useStore = defineStore('counter', () => {
   function sunChange(e) {//阳光数目变更
     initialSun.value += e
   }
- function initializationPlant(){
-  for(let i in plant){
-    plant[i].choose=false
+  function initializationPlant() {
+    for (let i in plant) {
+      plant[i].choose = false
+    }
   }
- }
-  return { has,start,gameCard, initialSun, corpse, chooseChange,sunChange,initializationPlant}
+  return { has, start, gameCard, initialSun, corpse, chooseChange, sunChange, initializationPlant }
 })

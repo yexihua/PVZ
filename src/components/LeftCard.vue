@@ -12,13 +12,19 @@
         </div>
         <div class="Sun">{{ usestore.initialSun }}</div>
         <div v-show="cardStatus.plant[0] != null" class="planting" v-for="i in cardStatus.plant" :key="i.identifier"
-            :style="{ backgroundImage: `url(${getImageUrl(i.plantPath)})`, left:150 + (85 * i.x) - i.x * 5  + 'px', top: 70 + (100 * i.y )+ 'px' }"></div>
+            :style="{ backgroundImage: `url(${getImageUrl(i.plantPath)})`, left: 150 + (85 * i.x) - i.x * 5 + 'px', top: 70 + (100 * i.y) + 'px' }">
+            <div v-show="i.product[0]" class="product" v-for="k in i.product" :key="k.identifier"
+                @click="i.kind == 'produce' && sunAdd(k.identifier)"
+                :style="{ background: `url(${getImageUrl(i.productPath)})`, width: i.productWidth + 'px', height: i.productHeigth + 'px', left: k.x + 'px', top: k.y + 'px', }">
+            </div>
+        </div>
     </div>
 </template>
 <script setup>
 import { useStore } from "../stores/counter"
 import { reactive } from "vue";
 import * as _ from 'lodash'
+import { onBeforeRouteLeave } from "vue-router";
 const usestore = useStore()
 const props = defineProps({
     visable: Boolean,
@@ -33,6 +39,38 @@ const cardStatus = reactive({
     },
     plant: []//要种植的植物
 })
+const sunAdd = (e) => {
+    for (let i in cardStatus.plant) {
+        for (let k in cardStatus.plant[i].product) {
+            if (cardStatus.plant[i].product[k].identifier == e) {
+                cardStatus.plant[i].product.splice(k, 1)
+            }
+        }
+    }
+    usestore.sunChange(25)
+}
+const plantMain = setInterval(() => {
+    if (cardStatus.plant[0] != null) {
+        for (let i in cardStatus.plant) {
+            cardStatus.plant[i].time += 100
+            if (cardStatus.plant[i].time >= cardStatus.plant[i].interval) {
+                cardStatus.plant[i].time = 0
+                cardStatus.plant[i].product.push({ x: 50, y: 30, identifier: _.uniqueId("product_"), })
+            }
+            if (cardStatus.plant[i].kind == "produce" && cardStatus.plant[i].product[0] != null) {
+                for (let k in cardStatus.plant[i].product) {
+                    let sunDisable = setTimeout(() => {
+                        cardStatus.plant[i].product.splice(k,1)
+                        clearTimeout(sunDisable)
+                    }, 3000)
+                }
+
+
+
+            }
+        }
+    }
+}, 100)
 const getImageUrl = (path) => {
     return new URL(`../assets/${path}`, import.meta.url).href
 }
@@ -52,26 +90,27 @@ const createPlant = (a, b) => {
             if (e.button == 2) {
                 cardStatus.illusion.have = false
             } else if (e.button == 0 && 150 < e.pageX && e.pageX < 900 && e.pageY > 70 && e.pageY < 600) {
-                let horizontal =  Math.floor((e.pageX - 150) / 85)
-                let perpendicular =Math.floor((e.pageY - 70) / 100)
-                for(let i in cardStatus.plant){
-                    if(cardStatus.plant[i].x==horizontal&&cardStatus.plant[i].y==perpendicular)
-                    {
+                let horizontal = Math.floor((e.pageX - 150) / 85)
+                let perpendicular = Math.floor((e.pageY - 70) / 100)
+                for (let i in cardStatus.plant) {
+                    if (cardStatus.plant[i].x == horizontal && cardStatus.plant[i].y == perpendicular) {
                         return
                     }
                 }
                 for (let i in usestore.has) {
                     if (usestore.has[i].name == cardStatus.illusion.name) {
-                        cardStatus.plant.push({ identifier: _.uniqueId("plant_"), x: horizontal, y: perpendicular, ...usestore.has[i] })
+                        cardStatus.plant.push(JSON.parse(JSON.stringify({ identifier: _.uniqueId("plant_"), x: horizontal, y: perpendicular, ...usestore.has[i] })))
                     }
                 }
                 cardStatus.illusion.have = false
-
             }
         }
 
     })
 }
+onBeforeRouteLeave((to, from) => {
+    clearInterval(plantMain)
+})
 </script>
 <style scoped>
 .left-card {
@@ -119,6 +158,12 @@ const createPlant = (a, b) => {
     width: 84px;
     height: 100px;
     background: no-repeat 100% 100%;
+    z-index: 4;
 
+}
+
+.product {
+    position: absolute;
+    z-index: 999;
 }
 </style>
