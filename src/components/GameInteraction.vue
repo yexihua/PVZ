@@ -1,28 +1,33 @@
 <template>
     <div>
         <div class="left-card">
-            <div class="card" v-for="i in usestore.gameCard" :key="i.name"
-                :style="{ backgroundImage: `url(${getImageUrl(i.path)})` }" @click="createPlant(i.plantPath, i.name)">
+            <!-- 左侧卡片 -->
+            <div class="card" v-for="(i, index) in interaction.plantCard" :key="i.name"
+                :style="{ backgroundImage: `url(${getImageUrl(i.path)})` }"
+                @click="!i.inBurial && createPlant(i.plantPath, i.name, i.consume, index)">
                 {{ i.consume }}
             </div>
-            <!-- <img src="../assets/plant/Peashooter/Peashooter.gif" alt=""> -->
+            <!-- 植物虚影 -->
             <div v-show="interaction.illusion.have" class="illusion"
                 :style="{ backgroundImage: `url(${getImageUrl(interaction.illusion.path)})`, left: interaction.illusion.x + 'px', top: interaction.illusion.y + 'px' }">
             </div>
         </div>
+        <!-- 阳光总数 -->
         <div class="Sun">{{ usestore.initialSun }}</div>
+        <!-- 生成植物 -->
         <div v-show="interaction.plant[0] != null" class="planting" v-for="i in interaction.plant" :key="i.identifier"
             :style="{ backgroundImage: `url(${getImageUrl(i.plantPath)})`, left: 150 + (85 * i.x) - i.x * 5 + 'px', top: 70 + (100 * i.y) + 'px' }">
-            <div v-show="i.product[0]" class="product" v-for="k in i.product" :key="k.identifier"
-                @click="i.kind == 'produce' && sunAdd(k.identifier)"
-                :style="{ background: `url(${getImageUrl(i.productPath)})`, width: i.productWidth + 'px', height: i.productHeigth + 'px', left: k.x + 'px', top: k.y + 'px', }">
-            </div>
+        </div>
+        <!-- 生成植物的生成物 -->
+        <div v-show="interaction.product[0]" class="product" v-for="i in interaction.product" :key="i.identifier"
+            @click="i.kind == 'produce' && sunAdd(i.identifier)"
+            :style="{ background: `url(${getImageUrl(i.path)})`, width: i.long + 'px', height: i.tall + 'px', left: i.x + 'px', top: i.y + 'px', }">
         </div>
         <div class="grass">
             <!-- 生成僵尸 -->
             <template v-if="interaction.corpse.entrance[0]">
                 <div class="corpse" v-for="i in interaction.corpse.entrance" :key="i.identifier"
-                    :style="{ left: i.x + 'px', top: i.y + 'px', background: `url(${getImageUrl(i.standPath)})` }"></div>
+                    :style="{ left: i.x + 'px', top: i.y + 'px', background: `url(${getImageUrl(i.path)})` }"></div>
             </template>
         </div>
         <!-- 关卡失败提示语 -->
@@ -32,13 +37,15 @@
 </template>
 <script setup>
 import { useStore } from "../stores/counter"
-import { reactive } from "vue";
+import { onMounted, reactive } from "vue";
 import * as _ from 'lodash'
 import { onBeforeRouteLeave } from "vue-router";
 const usestore = useStore()
 
 const interaction = reactive({
+    plantCard: [],//植物卡片
     illusion: {//选中植物的虚影
+        consume: null,
         name: null,
         path: null,
         have: false,
@@ -46,20 +53,20 @@ const interaction = reactive({
         y: null
     },
     plant: [],//要种植的植物
+    product: [],//植物生成物
     corpse: {//僵尸
         entrance: [],//要生成的僵尸
         entranceNumber: 1,//要生成的僵尸数
         wave: 1,//第几波僵尸
+        number: 0//以及出现僵尸数量
     },
     success: null
 
 })
 const sunAdd = (e) => {//阳光拾取
-    for (let i in interaction.plant) {
-        for (let k in interaction.plant[i].product) {
-            if (interaction.plant[i].product[k].identifier == e) {
-                interaction.plant[i].product.splice(k, 1)
-            }
+    for (let i in interaction.product) {
+        if (interaction.product[i].identifier == e) {
+            interaction.product.splice(i, 1)
         }
     }
     usestore.sunChange(25)
@@ -75,61 +82,107 @@ const gameback = () => {
 }
 // 僵尸生成定时器
 const corpseGo = setInterval(() => {
-    interaction.corpse.entranceNumber = Math.ceil(interaction.corpse.wave / 2)
-    interaction.corpse.wave += 1
-    for (let i = 0; i < interaction.corpse.entranceNumber; i++) {
-        let random = getNumber(2, 1)
-        for (let i in usestore.corpse) {
-            if (usestore.corpse[i].id == random) {
-                interaction.corpse.entrance.push(JSON.parse(JSON.stringify({ x: 850, y: getNumber(4, 0) * 100 + 10, identifier: _.uniqueId(), ...usestore.corpse[i] })))
+    if (interaction.corpse.number < 50) {
+        interaction.corpse.entranceNumber = Math.ceil(interaction.corpse.wave / 2)
+        interaction.corpse.wave += 1
+        for (let i = 0; i < interaction.corpse.entranceNumber; i++) {
+            let random = getNumber(2, 1)
+            for (let i in usestore.corpse) {
+                if (usestore.corpse[i].id == random) {
+                    const corpseY = getNumber(4, 0)
+                    interaction.corpse.entrance.push(JSON.parse(JSON.stringify({ x: 850, y: corpseY * 100 + 10, perpendicular: corpseY, identifier: _.uniqueId(), ...usestore.corpse[i] })))
+                    interaction.corpse.number++
+                }
             }
         }
     }
+    else {
+        clearInterval(corpseGo)
+    }
 }, 20000)
-const Main = setInterval(() => {//游戏运行函数
+// 僵尸移动以及失败控制
+const corpseMove = setInterval(() => {
     if (interaction.corpse.entrance[0]) {
         for (let i in interaction.corpse.entrance) {
             interaction.corpse.entrance[i].x -= 1.5
             if (interaction.corpse.entrance[i].x <= -50) {
                 interaction.success = false
-                clearInterval(Main)
+                clearInterval(corpseMove)
             }
         }
     }
-    if (interaction.plant[0] != null) {
-        for (let i in interaction.plant) {
-            interaction.plant[i].time += 100
-            if (interaction.plant[i].time >= interaction.plant[i].interval) {
-                interaction.plant[i].time = 0
-                interaction.plant[i].product.push({ x: 0, y: 30, identifier: _.uniqueId("product_"), })
-            }
-            if (interaction.plant[i].kind == "produce" && interaction.plant[i].product[0] != null) {
-                for (let k in interaction.plant[i].product) {
-                    let sunDisable = setTimeout(() => {
-                        interaction.plant[i].product.splice(k, 1)
-                        clearTimeout(sunDisable)
-                    }, 3000)
+}, 100)
+const productMove = setInterval(() => {
+    // 植物生成物行为控制
+    if (interaction.product[0]) {
+        for (let i in interaction.product) {
+            if (interaction.product[i].kind == "produce") {
+                let sunDisable = setTimeout(() => {
+                    interaction.product.splice(i, 1)
+                    clearTimeout(sunDisable)
+                }, 3000)
+            } else if (interaction.product[i].kind == "fight") {
+                interaction.product[i].x += 50
+                if (interaction.product[i].x >= 900) {
+                    interaction.product.splice(i, 1)
                 }
             }
-            else if (interaction.plant[i].kind == "fight" && interaction.plant[i].product[0] != null) {
-                for (let k in interaction.plant[i].product) {
-                    interaction.plant[i].product[k].x += 50
-                    if (interaction.plant[i].product[k].x >= 900 - (150 + (85 * interaction.plant[i].x) - interaction.plant[i].x * 5)) {
-                        interaction.plant[i].product.splice(k, 1)
+
+        }
+    }
+}, 100)
+const Main = setInterval(() => {//游戏运行函数
+    // 植物生成物控制
+    if (interaction.plant[0] != null) {
+        for (let i in interaction.plant) {
+            if (interaction.plant[i].kind == "produce") {
+                interaction.plant[i].time += 100
+                if (interaction.plant[i].time >= interaction.plant[i].interval) {
+                    interaction.plant[i].time = 0
+                    interaction.product.push({
+                        kind: interaction.plant[i].kind,
+                        perpendicular: interaction.plant[i].y,
+                        x: 150 + (85 * interaction.plant[i].x) - interaction.plant[i].x * 5,
+                        y: 70 + (100 * interaction.plant[i].y),
+                        identifier: _.uniqueId("product_"),
+                        path: interaction.plant[i].productPath,
+                        long: interaction.plant[i].productWidth,
+                        tall: interaction.plant[i].productHeigth
+                    })
+                }
+            } else if (interaction.plant[i].kind == "fight" && interaction.corpse.entrance[0]) {
+                for (let k in interaction.corpse.entrance) {
+                    if (interaction.corpse.entrance[k].perpendicular == interaction.plant[i].y) {
+                        interaction.plant[i].time += 100
+                        if (interaction.plant[i].time >= interaction.plant[i].interval) {
+                            interaction.plant[i].time = 0
+                            interaction.product.push({
+                                kind: interaction.plant[i].kind,
+                                perpendicular: interaction.plant[i].y,
+                                x: 150 + (85 * interaction.plant[i].x) - interaction.plant[i].x * 5,
+                                y: 100 + (100 * interaction.plant[i].y),
+                                identifier: _.uniqueId("product_"),
+                                path: interaction.plant[i].productPath,
+                                long: interaction.plant[i].productWidth,
+                                tall: interaction.plant[i].productHeigth
+                            })
+                        }
                     }
                 }
             }
         }
     }
+
 }, 100)
 const getImageUrl = (path) => {
     return new URL(`../assets/${path}`, import.meta.url).href
 }
-const createPlant = (a, b) => {
-    interaction.illusion.path = a
+// 卡片点击后执行函数
+const createPlant = (nowPath, has, c, index) => {
+    interaction.illusion.consume = c
+    interaction.illusion.path = nowPath
     interaction.illusion.have = true
-    interaction.illusion.name = b
-    // console.log(1);
+    interaction.illusion.name = has
     document.addEventListener('mousemove', function (e) {
         //鼠标只要移动,就会触发事件
         interaction.illusion.x = e.pageX;
@@ -141,26 +194,45 @@ const createPlant = (a, b) => {
             if (e.button == 2) {
                 interaction.illusion.have = false
             } else if (e.button == 0 && 150 < e.pageX && e.pageX < 900 && e.pageY > 70 && e.pageY < 600) {
-                let horizontal = Math.floor((e.pageX - 150) / 85)
-                let perpendicular = Math.floor((e.pageY - 70) / 100)
-                for (let i in interaction.plant) {
-                    if (interaction.plant[i].x == horizontal && interaction.plant[i].y == perpendicular) {
-                        return
+                if (usestore.initialSun >= interaction.illusion.consume) {
+                    let horizontal = Math.floor((e.pageX - 150) / 85)
+                    let perpendicular = Math.floor((e.pageY - 70) / 100)
+                    for (let i in interaction.plant) {
+                        if (interaction.plant[i].x == horizontal && interaction.plant[i].y == perpendicular) {
+                            return
+                        }
                     }
-                }
-                for (let i in usestore.has) {
-                    if (usestore.has[i].name == interaction.illusion.name) {
-                        interaction.plant.push(JSON.parse(JSON.stringify({ identifier: _.uniqueId("plant_"), x: horizontal, y: perpendicular, ...usestore.has[i] })))
+                    for (let i in usestore.has) {
+                        if (usestore.has[i].name == interaction.illusion.name) {
+                            interaction.plant.push(JSON.parse(JSON.stringify({ identifier: _.uniqueId("plant_"), x: horizontal, y: perpendicular, ...usestore.has[i] })))
+                        }
                     }
+                    usestore.sunChange(-interaction.illusion.consume)
+                    interaction.illusion.have = false
+                    interaction.plantCard[index].path = interaction.plantCard[index].choosePath
+                    interaction.plantCard[index].inBurial = true
+                    let cardBalck = setTimeout(() => {
+                        interaction.plantCard[index].path = interaction.plantCard[index].defaultPath
+                        interaction.plantCard[index].inBurial = false
+
+                        clearTimeout(cardBalck)
+                    }, interaction.plantCard[index].burial)
+                } else {
+                    interaction.illusion.have = false
                 }
-                interaction.illusion.have = false
+
             }
         }
 
     })
 }
+onMounted(() => {
+    for (let i = 0; i < usestore.gameCard.length; i++) {
+        interaction.plantCard.push(usestore.gameCard[i])
+    }
+})
 onBeforeRouteLeave((to, from) => {
-    clearInterval(Main, corpseGo)
+    clearInterval(Main, corpseGo, corpseMove, productMove)
 })
 </script>
 <style scoped>
@@ -215,7 +287,7 @@ onBeforeRouteLeave((to, from) => {
 
 .product {
     position: absolute;
-    z-index: 999;
+    z-index: 998;
     transition: all 0.1s;
 }
 
@@ -231,6 +303,7 @@ onBeforeRouteLeave((to, from) => {
     position: absolute;
     width: 166px;
     height: 144px;
+    transition: all 0.1s;
 }
 
 .fail {

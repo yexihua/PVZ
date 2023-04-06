@@ -7,19 +7,19 @@ export const useStore = defineStore('counter', () => {
   const plant = reactive({//植物
     Peashooter: {
       name: "豌豆射手",
+      inBurial:false,//是否在冷却中
       burial: 7500,//冷却
       kind:"fight",//种类
-
       consume: 100,//消耗阳光
-      aggressivity: 10,//攻击力
+      aggressivity: 20,//攻击力
       Blood: 50,//血量
       have: true,//是否拥有
       choose: false,//是否被选中
       interval: 1400,//攻击间隔
-      path: "plantCard/Peashooter.png",//卡片路径
+      path: "plantCard/Peashooter.png",//当前卡片路径
+      defaultPath:"plantCard/Peashooter.png",//默认卡片路径
       choosePath: "plantCard/PeashooterG.png",//选中状态下的卡片路径
       plantPath: 'plant/Peashooter/Peashooter.gif',
-      product: [],//生成物
       time:0,//生成物计时
       productPath:"product/PB00.gif",//生成物路径
       productWidth:56,//生成物宽度
@@ -28,6 +28,7 @@ export const useStore = defineStore('counter', () => {
     SunFlower: {
       name: "向日葵",
       kind:"produce",
+      inBurial:false,//是否在冷却中
       consume: 50,//消耗阳光
       aggressivity: 0,//攻击力
       have: true,
@@ -37,8 +38,8 @@ export const useStore = defineStore('counter', () => {
       interval: 24000,//攻击间隔
       plantPath: 'plant/SunFlower/SunFlower.gif',
       path: "plantCard/SunFlower.png",
+      defaultPath:"plantCard/SunFlower.png",//默认卡片路径
       choosePath: "plantCard/SunFlowerG.png",//选中状态下的卡片路径
-      product: [],//生成物
       time:0,
       productPath:"product/Sun.gif",
       productWidth:78,//生成物宽度
@@ -49,12 +50,27 @@ export const useStore = defineStore('counter', () => {
     normalZombie: {
       id: 1,
       name: '普通僵尸',
-      standPath: 'corpse/Zombie/Zombie.gif'
+      path: 'corpse/Zombie/Zombie.gif',
+      standPath:'corpse/Zombie/Zombie.gif',
+      fightPath:'corpse/Zombie/ZombieAttack.gif',
+      diePath:'corpse/Zombie/ZombieDie.gif',
+      fight:10,//攻击力，单位为0.1s
+      blood:200,//血量
+      ornaments:0,//饰品血量
     },
     ConeheadZombie: {
       id: 2,
       name: '路障僵尸',
-      standPath: 'corpse/ConeheadZombie/ConeheadZombie.gif'
+      path: 'corpse/ConeheadZombie/ConeheadZombie.gif',
+      standPath:'corpse/ConeheadZombie/ConeheadZombie.gif',
+      fightPath:'corpse/ConeheadZombie/ConeheadZombieAttack.gif',
+      diePath:'corpse/Zombie/ZombieDie.gif',
+      fight:10,//攻击力，单位为0.1s
+      blood:200,//血量
+      ornaments:370,//饰品血量
+
+
+
     },
   })
 

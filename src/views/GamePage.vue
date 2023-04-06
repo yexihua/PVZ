@@ -9,7 +9,7 @@
         <!-- 出场僵尸展示 -->
         <div class="zombie" v-if="gameStatus.chooseVisable">
             <span class="zombiePeople" v-for="i in createCorpse()" :key="i.name"
-                :style="{ background: `url(${getImageUrl(i.standPath)})`, left: getNumber(230, 0) + 'px', top: getNumber(380, 0) + 'px' }"></span>
+                :style="{ background: `url(${getImageUrl(i.path)})`, left: getNumber(230, 0) + 'px', top: getNumber(380, 0) + 'px' }"></span>
         </div>
         <!-- 菜单 -->
         <div class="menuOpen" @click="menuOpen" v-show="gameStatus.menuVisable">菜单</div>
@@ -21,7 +21,7 @@
             <router-link to="/" class="back-menu">返回主菜单</router-link>
         </MessageBox>
         <!-- 左侧卡片 -->
-        <GameInteraction v-show="gameStatus.cardVisable"></GameInteraction>
+        <GameInteraction v-if="gameStatus.cardVisable"></GameInteraction>
         <!-- 自然阳光掉落 -->
         <div class="sun" v-show="gameStatus.sunEcptoma" @click="sunClose"
             :style="{ left: gameStatus.sunPosition.x, top: gameStatus.sunPosition.y || '-78px' }">
@@ -34,11 +34,9 @@ import ChooseCard from "../components/ChooseCard.vue"
 import GameInteraction from "../components/GameInteraction.vue";
 import { ref, onMounted, reactive } from "vue"
 import MessageBox from "../components/MessageBox.vue";
-import { onBeforeRouteLeave, useRouter } from "vue-router";
+import { onBeforeRouteLeave } from "vue-router";
 import { useStore } from "../stores/counter"
 import * as _ from 'lodash'
-const router = useRouter();//路由实例
-
 const store = useStore()//pinia实例
 const gameRef = ref()
 const status = reactive({
@@ -48,7 +46,7 @@ const audioGame = ref();//音频实例
 const chooseOver = ref(false)//选择卡片完毕
 const visable = ref(false)//菜单打开
 const tipStart = ref(false)//提示语状态
-var sunDown, corpseGo, main;
+var sunDown;
 // 获取随机数整数
 const getNumber = (m, n) => {
     return Math.floor(Math.random() * (m - n + 1)) + n;
@@ -63,8 +61,6 @@ const gameStatus = reactive({
         Y: null
     },
 })
-
-
 // 生成僵尸对应id
 const createCorpse = () => {
     let arr = []
@@ -78,7 +74,6 @@ const createCorpse = () => {
     }
     return arr
 }
-
 
 const menuOpen = () => {
     visable.value = true
@@ -109,9 +104,7 @@ const getImageUrl = (path) => {//获取文件路径
 const chooseVisableChange = () => {
     gameStatus.chooseVisable = false
     chooseOver.value = true
-    var tipOpen = setTimeout(() => {
-        tipStart.value = true
-    }, 500)
+    tipStart.value = true
     const tipclose = setTimeout(() => {
         tipStart.value = false
         gameStatus.cardVisable = true
@@ -128,26 +121,15 @@ const chooseVisableChange = () => {
                 clearTimeout(appear)
             }, 7000)
         }, 11000)
-        corpseGo = setInterval(() => {
-            gameStatus.entranceNumber = Math.ceil(gameStatus.wave / 2)
-            gameStatus.wave += 1
-            for (let i = 0; i < gameStatus.entranceNumber; i++) {
-                let random = getNumber(2, 1)
-                for (let i in store.corpse) {
-                    if (store.corpse[i].id == random) {
-                        gameStatus.entrance.push({ x: 850, y: getNumber(4, 0) * 100 + 10, identifier: _.uniqueId(), ...store.corpse[i] })
-                    }
-                }
-            }
-        }, 20000)
-        clearTimeout(tipOpen, tipclose)
+
+        clearTimeout(tipclose)
     }, 3500)
 }
 
 onBeforeRouteLeave((to, from) => {
     sessionStorage.setItem("bgmStaus", JSON.stringify({ bgm: status.bgm }))
-    clearTimeout(closeCard, main)
-    clearInterval(sunDown, corpseGo)
+    clearTimeout(closeCard)
+    clearInterval(sunDown)
     store.initializationPlant()
 })
 onMounted(() => {
@@ -158,7 +140,6 @@ onMounted(() => {
             audioGame.value.play()
         }
     }
-    console.log();
 })
 
 
@@ -246,7 +227,7 @@ onMounted(() => {
     background: url('../assets/product/Sun.gif');
     position: absolute;
     z-index: 5;
-    transition: all 3s;
+    transition: top 3s;
 }
 
 .zombie {
