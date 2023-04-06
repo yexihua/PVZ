@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 
 export const useStore = defineStore('counter', () => {
 
-  const initialSun = ref(50);//阳光数目
+  const initialSun = ref(100);//阳光数目
   const plant = reactive({//植物
     Peashooter: {
       name: "豌豆射手",
@@ -15,7 +15,7 @@ export const useStore = defineStore('counter', () => {
       Blood: 50,//血量
       have: true,//是否拥有
       choose: false,//是否被选中
-      interval: 1400,//攻击间隔
+      interval: 1400,//攻击间隔，1.4s一发
       path: "plantCard/Peashooter.png",//当前卡片路径
       defaultPath:"plantCard/Peashooter.png",//默认卡片路径
       choosePath: "plantCard/PeashooterG.png",//选中状态下的卡片路径
@@ -35,7 +35,7 @@ export const useStore = defineStore('counter', () => {
       Blood: 300,
       choose: false,//是否被选中
       burial: 7500,//冷却
-      interval: 24000,//攻击间隔
+      interval: 24000,//攻击间隔，24s一发
       plantPath: 'plant/SunFlower/SunFlower.gif',
       path: "plantCard/SunFlower.png",
       defaultPath:"plantCard/SunFlower.png",//默认卡片路径
@@ -57,6 +57,7 @@ export const useStore = defineStore('counter', () => {
       fight:10,//攻击力，单位为0.1s
       blood:200,//血量
       ornaments:0,//饰品血量
+      velocity:17//移速，单位s
     },
     ConeheadZombie: {
       id: 2,

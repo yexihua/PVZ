@@ -23,6 +23,7 @@ const closeing = () => {
   width: 412px;
   height: 483px;
   position: absolute;
+  z-index: 998;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);

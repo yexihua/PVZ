@@ -46,7 +46,7 @@ const audioGame = ref();//音频实例
 const chooseOver = ref(false)//选择卡片完毕
 const visable = ref(false)//菜单打开
 const tipStart = ref(false)//提示语状态
-var sunDown;
+var sunDown,disappear,appear;
 // 获取随机数整数
 const getNumber = (m, n) => {
     return Math.floor(Math.random() * (m - n + 1)) + n;
@@ -86,6 +86,7 @@ const sunClose = () => {
     store.sunChange(25)
     gameStatus.sunPosition.x = getNumber(820, 200) + 'px'
     gameStatus.sunPosition.y = null
+    clearTimeout(disappear,appear)
 }
 const closeChange = () => {//菜单弹出返回
     visable.value = 0;
@@ -109,26 +110,24 @@ const chooseVisableChange = () => {
         tipStart.value = false
         gameStatus.cardVisable = true
         sunDown = setInterval(() => {
+            clearTimeout(disappear,appear,tipclose)
             gameStatus.sunPosition.y = getNumber(500, 100) + 'px'
-            const disappear = setTimeout(() => {
+            disappear = setTimeout(() => {
                 gameStatus.sunEcptoma = false
                 gameStatus.sunPosition.x = getNumber(820, 200) + 'px'
                 gameStatus.sunPosition.y = null
-                clearTimeout(disappear)
             }, 5000)
-            const appear = setTimeout(() => {
+            appear = setTimeout(() => {
                 gameStatus.sunEcptoma = true
-                clearTimeout(appear)
+                clearTimeout(disappear)
             }, 7000)
-        }, 11000)
-
-        clearTimeout(tipclose)
+        }, 10000)
     }, 3500)
 }
 
 onBeforeRouteLeave((to, from) => {
     sessionStorage.setItem("bgmStaus", JSON.stringify({ bgm: status.bgm }))
-    clearTimeout(closeCard)
+    clearTimeout(closeCard,disappear,appear)
     clearInterval(sunDown)
     store.initializationPlant()
 })
@@ -209,6 +208,7 @@ onMounted(() => {
     box-sizing: border-box;
     width: 113px;
     height: 41px;
+    z-index: 998;
     background: url("../assets/bgc/button1.png") no-repeat;
 }
 
@@ -227,7 +227,7 @@ onMounted(() => {
     background: url('../assets/product/Sun.gif');
     position: absolute;
     z-index: 5;
-    transition: top 3s;
+    transition: top 3s linear;
 }
 
 .zombie {

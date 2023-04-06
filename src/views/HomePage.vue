@@ -22,7 +22,7 @@
       <a-checkbox @change="Music" class="text" v-show="visable == 2" v-model="status.bgm"><span>开启背景音乐</span></a-checkbox>
 
       <div v-show="visable == 3" class="gameExit">
-        <span>确认要退出么</span>
+        <span>确认要退出么（若退出失败请手动关闭）</span>
         <br>
         <div @click="gameclose" v-show="visable == 3" class="textExit">Yes</div>
       </div>
@@ -60,7 +60,7 @@ const closeChange = () => {//菜单弹出返回
   visable.value = 0;
 };
 const gameclose = () => {//退出游戏
-  window.close()
+  open(location, '_self').close();
 }
 const startGame = () => {//开始游戏
   if (!visable.value) {
@@ -68,17 +68,17 @@ const startGame = () => {//开始游戏
   }
 }
 onMounted(() => {
-  if(sessionStorage.getItem("bgmStaus")){
+  if (sessionStorage.getItem("bgmStaus")) {
     const musicOpen = JSON.parse(sessionStorage.getItem("bgmStaus")).bgm
-    status.bgm=musicOpen
+    status.bgm = musicOpen
     if (musicOpen) {
-    audioRef.value.play()
-  }
+      audioRef.value.play()
+    }
   }
 })
 // 页面跳转
 onBeforeRouteLeave((to, from) => {
-  sessionStorage.setItem("bgmStaus", JSON.stringify({bgm:status.bgm}))
+  sessionStorage.setItem("bgmStaus", JSON.stringify({ bgm: status.bgm }))
 })
 const Music = () => {//音频开关
   if (status.bgm) {
