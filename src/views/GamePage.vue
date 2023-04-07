@@ -226,7 +226,7 @@ onMounted(() => {
     height: 78px;
     background: url('../assets/product/Sun.gif');
     position: absolute;
-    z-index: 5;
+    z-index:997;
     transition: top 3s linear;
 }
 

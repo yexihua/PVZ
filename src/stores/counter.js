@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 
 export const useStore = defineStore('counter', () => {
 
-  const initialSun = ref(100);//阳光数目
+  const initialSun = ref(500);//阳光数目
   const plant = reactive({//植物
     Peashooter: {
       name: "豌豆射手",
@@ -53,7 +53,7 @@ export const useStore = defineStore('counter', () => {
       path: 'corpse/Zombie/Zombie.gif',
       standPath:'corpse/Zombie/Zombie.gif',
       fightPath:'corpse/Zombie/ZombieAttack.gif',
-      diePath:'corpse/Zombie/ZombieDie.gif',
+      diePath:'corpse/Zombie/ZombieLostHead.gif',
       fight:10,//攻击力，单位为0.1s
       blood:200,//血量
       ornaments:0,//饰品血量
@@ -63,9 +63,10 @@ export const useStore = defineStore('counter', () => {
       id: 2,
       name: '路障僵尸',
       path: 'corpse/ConeheadZombie/ConeheadZombie.gif',
+      normalPath:'corpse/Zombie/Zombie.gif',
       standPath:'corpse/ConeheadZombie/ConeheadZombie.gif',
       fightPath:'corpse/ConeheadZombie/ConeheadZombieAttack.gif',
-      diePath:'corpse/Zombie/ZombieDie.gif',
+      diePath:'corpse/Zombie/ZombieLostHead.gif',
       fight:10,//攻击力，单位为0.1s
       blood:200,//血量
       ornaments:370,//饰品血量

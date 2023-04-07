@@ -60,10 +60,10 @@ const interaction = reactive({
         entrance: [],//要生成的僵尸
         entranceNumber: 1,//要生成的僵尸数
         wave: 1,//第几波僵尸
-        number: 0//以及出现僵尸数量
+        number: 0,//以及出现僵尸数量
+        time: 0
     },
     success: null
-
 })
 var cardBalck, sunDisable
 const sunAdd = (e) => {//阳光拾取
@@ -84,104 +84,6 @@ const getNumber = (m, n) => {
 const gameback = () => {
     router.push("/")
 }
-// 僵尸生成定时器
-const corpseGo = setInterval(() => {
-    if (interaction.corpse.number < 50) {
-        interaction.corpse.entranceNumber = Math.ceil(interaction.corpse.wave / 2)
-        interaction.corpse.wave += 1
-        for (let i = 0; i < interaction.corpse.entranceNumber; i++) {
-            let random = getNumber(2, 1)
-            for (let k in usestore.corpse) {
-                if (usestore.corpse[k].id == random) {
-                    const corpseY = getNumber(4, 0)
-                    interaction.corpse.entrance.push({ x: 850, y: corpseY * 100 + 10, perpendicular: corpseY, identifier: _.uniqueId(), ...usestore.corpse[k] })
-                    interaction.corpse.number++
-                }
-            }
-        }
-    }
-    else {
-        clearInterval(corpseGo)
-    }
-}, 20000)
-
-const Main = setInterval(() => {//游戏运行函数
-    // 僵尸移动以及失败控制
-    if (interaction.corpse.entrance[0]) {
-        for (let i in interaction.corpse.entrance) {
-            if (interaction.corpse.entrance[i].path != interaction.corpse.entrance[i].diePath) {
-                interaction.corpse.entrance[i].x -= 1.5
-                if (interaction.corpse.entrance[i].x <= -50) {
-                    interaction.success = false
-                    clearInterval(Main)
-                }
-            }
-
-        }
-    }
-
-    // 植物生成物控制
-    if (interaction.plant[0] != null) {
-        for (let i in interaction.plant) {
-            if (interaction.plant[i].kind == "produce") {
-                interaction.plant[i].time += 100
-                if (interaction.plant[i].time >= interaction.plant[i].interval) {
-                    interaction.plant[i].time = 0
-                    interaction.product.push({
-                        kind: interaction.plant[i].kind,
-                        perpendicular: interaction.plant[i].y,
-                        x: 150 + (85 * interaction.plant[i].x) - interaction.plant[i].x * 5,
-                        y: 70 + (100 * interaction.plant[i].y),
-                        identifier: _.uniqueId("product_"),
-                        path: interaction.plant[i].productPath,
-                        long: interaction.plant[i].productWidth,
-                        tall: interaction.plant[i].productHeigth
-                    })
-                }
-            } else if (interaction.plant[i].kind == "fight" && interaction.corpse.entrance[0]) {
-                for (let k in interaction.corpse.entrance) {
-                    if (interaction.corpse.entrance[k].perpendicular == interaction.plant[i].y) {
-                        interaction.plant[i].time += 100
-                        if (interaction.plant[i].time >= interaction.plant[i].interval) {
-                            interaction.plant[i].time = 0
-                            interaction.product.push({
-                                kind: interaction.plant[i].kind,
-                                perpendicular: interaction.plant[i].y,
-                                x: 200 + (85 * interaction.plant[i].x) - interaction.plant[i].x * 5,
-                                y: 100 + (100 * interaction.plant[i].y),
-                                identifier: _.uniqueId("product_"),
-                                path: interaction.plant[i].productPath,
-                                long: interaction.plant[i].productWidth,
-                                tall: interaction.plant[i].productHeigth,
-                                fight: interaction.plant[i].aggressivity
-                            })
-                        }
-                    }
-                }
-            }
-        }
-    }
-    // 植物生成物行为控制
-    if (interaction.product[0]) {
-        for (let i in interaction.product) {
-            if (interaction.product[i].kind == "produce") {
-                clearTimeout(sunDisable)
-                sunDisable = setTimeout(() => {
-                    interaction.product.splice(i, 1)
-                }, 3000)
-            } else {
-                interaction.product[i].x += 50
-                if (interaction.product[i].x >= 900) {
-                    interaction.product.splice(i, 1)
-                }
-            }
-
-        }
-    }
-}, 100)
-const getImageUrl = (path) => {
-    return new URL(`../assets/${path}`, import.meta.url).href
-}
 // 卡片点击后执行函数
 const createPlant = (nowPath, has, c, index) => {
     interaction.illusion.consume = c
@@ -201,7 +103,6 @@ const createPlant = (nowPath, has, c, index) => {
                 interaction.illusion.have = false
             } else if (e.button == 0 && 150 < e.pageX && e.pageX < 900 && e.pageY > 70 && e.pageY < 600) {
                 if (usestore.initialSun >= interaction.illusion.consume) {
-                    clearTimeout(cardBalck)
                     let horizontal = Math.floor((e.pageX - 150) / 85)
                     let perpendicular = Math.floor((e.pageY - 70) / 100)
                     for (let i in interaction.plant) {
@@ -232,14 +133,128 @@ const createPlant = (nowPath, has, c, index) => {
 
     })
 }
+
+const Main = setInterval(() => {//游戏运行函数
+    // 僵尸生成
+    if (interaction.corpse.number < 50) {
+        interaction.corpse.time += 100
+        if (interaction.corpse.time >= 20000) {
+            interaction.corpse.time = 0
+            interaction.corpse.entranceNumber = Math.ceil(interaction.corpse.wave / 2)
+            interaction.corpse.wave += 1
+            for (let i = 0; i < interaction.corpse.entranceNumber; i++) {
+                let random = getNumber(2, 1)
+                for (let k in usestore.corpse) {
+                    if (usestore.corpse[k].id == random) {
+                        const corpseY = getNumber(4, 0)
+                        interaction.corpse.entrance.push({ ...usestore.corpse[k], x: 850, y: corpseY * 100 + 10, perpendicular: corpseY, identifier: _.uniqueId(), })
+                        interaction.corpse.number++
+                    }
+                }
+            }
+        }
+    }
+    // 僵尸移动以及失败控制
+    if (interaction.corpse.entrance[0]) {
+        for (let i in interaction.corpse.entrance) {
+                interaction.corpse.entrance[i].x -= 1.5
+                if (interaction.corpse.entrance[i].x <= -20) {
+                    interaction.success = false
+                    clearInterval(Main)
+                }
+        }
+    }
+
+    // 植物生成物控制
+    if (interaction.plant[0] != null) {
+        for (let i in interaction.plant) {
+            if (interaction.plant[i].kind == "produce") {
+                interaction.plant[i].time += 100
+                if (interaction.plant[i].time >= interaction.plant[i].interval) {
+                    interaction.plant[i].time = 0
+                    interaction.product.push({
+                        kind: interaction.plant[i].kind,
+                        perpendicular: interaction.plant[i].y,
+                        x: 150 + (85 * interaction.plant[i].x) - interaction.plant[i].x * 5,
+                        y: 70 + (100 * interaction.plant[i].y),
+                        identifier: _.uniqueId("product_"),
+                        path: interaction.plant[i].productPath,
+                        long: interaction.plant[i].productWidth,
+                        tall: interaction.plant[i].productHeigth
+                    })
+                }
+            } else if (interaction.plant[i].kind == "fight" && interaction.corpse.entrance[0]) {
+                for (let k in interaction.corpse.entrance) {
+                    if (interaction.corpse.entrance[k].perpendicular == interaction.plant[i].y) {
+                        interaction.plant[i].time += 100
+                        if (interaction.plant[i].time >= interaction.plant[i].interval) {
+                            interaction.plant[i].time = 0
+                            interaction.product.push({
+                                kind: interaction.plant[i].kind,
+                                perpendicular: interaction.plant[i].y,
+                                x: 150 + (85 * interaction.plant[i].x) - interaction.plant[i].x * 5,
+                                y: 100 + (100 * interaction.plant[i].y),
+                                identifier: _.uniqueId("product_"),
+                                path: interaction.plant[i].productPath,
+                                long: interaction.plant[i].productWidth,
+                                tall: interaction.plant[i].productHeigth,
+                                fight: interaction.plant[i].aggressivity
+                            })
+                        }
+                    }
+                }
+            }
+        }
+    }
+    // 植物生成物行为控制
+    if (interaction.product[0]) {
+        for (let i in interaction.product) {
+            if (interaction.product[i].kind == "produce") {
+                sunDisable = setTimeout(() => {
+                    interaction.product.splice(i, 1)
+                }, 3000)
+            } else if (interaction.product[i].kind == "fight") {
+                interaction.product[i].x += 50
+                if (interaction.product[i].x >= 900) {
+                    interaction.product.splice(i, 1)
+                } else {
+                    for (let j in interaction.corpse.entrance) {
+                        if (interaction.corpse.entrance[j].perpendicular === interaction.product[i].perpendicular && interaction.product[i].x >= interaction.corpse.entrance[j].x + 80) {
+                            if (interaction.corpse.entrance[j].ornaments > 0) {
+                                interaction.corpse.entrance[j].ornaments -= interaction.product[i].fight
+                                interaction.product.splice(i, 1)
+                                if (interaction.corpse.entrance[j].ornaments <= 0) {
+                                    interaction.corpse.entrance[j].path = interaction.corpse.entrance[j].normalPath;
+                                }
+                            } else {
+                                interaction.corpse.entrance[j].blood -= interaction.product[i].fight
+                                interaction.product.splice(i, 1)
+                                switch (true) {
+                                    case (interaction.corpse.entrance[j].blood > 0 && interaction.corpse.entrance[j].blood <= 20): interaction.corpse.entrance[j].path = interaction.corpse.entrance[j].diePath; break
+                                    case (interaction.corpse.entrance[j].blood <= 0): interaction.corpse.entrance.splice(j, 1); break;
+                                }
+                            }
+
+                        }
+                    }
+                }
+
+
+            }
+        }
+    }
+}, 100)
+const getImageUrl = (path) => {
+    return new URL(`../assets/${path}`, import.meta.url).href
+}
 onMounted(() => {
     for (let i = 0; i < usestore.gameCard.length; i++) {
         interaction.plantCard.push(usestore.gameCard[i])
     }
 })
 onBeforeRouteLeave((to, from) => {
-    clearInterval(Main, corpseGo)
-    clearTimeout(cardBalck)
+    clearInterval(Main)
+    clearTimeout(cardBalck, sunDisable)
 })
 </script>
 <style scoped>
@@ -310,7 +325,7 @@ onBeforeRouteLeave((to, from) => {
     position: absolute;
     width: 166px;
     height: 144px;
-    transition: all 0.1s linear;
+    transition: all 0.1s;
     z-index: 7;
 }
 
