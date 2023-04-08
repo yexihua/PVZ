@@ -1,6 +1,6 @@
-# 植物大战僵尸（vue）
+# 植物大战僵尸v1.0.0（vue）
 
-该项目使用的是vue3+vite
+本项目是基于vue3框架开发的小游戏，少量借助了arco design内的内置组件。由于在实现过程中大量使用了ES6语法进行js逻辑运算，所以需要看阅这需要有一定的ES6与js基础
 
 ## Recommended IDE Setup
 
