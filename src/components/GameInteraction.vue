@@ -67,7 +67,7 @@ const interaction = reactive({
         entrance: [],//要生成的僵尸
         entranceNumber: 1,//要生成的僵尸数
         wave: 1,//第几波僵尸
-        number: 0,//以及出现僵尸数量
+        number: 0,//击杀的僵尸数量
         time: 0
     },
     success: null
@@ -276,7 +276,7 @@ const Main = setInterval(() => {//游戏运行函数
             }
         }
     }
-    if (interaction.corpse.number = 50) {
+    if (interaction.corpse.number == 50) {
         interaction.success = true
         clearInterval(Main)
     }

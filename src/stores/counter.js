@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 
 export const useStore = defineStore('counter', () => {
 
-  const initialSun = ref(500);//阳光数目
+  const initialSun = ref(100);//阳光数目
   const plant = reactive({//植物
     Peashooter: {
       name: "豌豆射手",
