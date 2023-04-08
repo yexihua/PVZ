@@ -16,7 +16,7 @@
         <div class="Sun">{{ usestore.initialSun }}</div>
         <!-- 生成植物 -->
         <div v-show="interaction.plant[0] != null" class="planting" v-for="i in interaction.plant" :key="i.identifier"
-            :style="{ backgroundImage: `url(${getImageUrl(i.plantPath)})`, left: 150 + (85 * i.x) - i.x * 5 + 'px', top: 70 + (100 * i.y) + 'px' }">
+            :style="{ backgroundImage: `url(${getImageUrl(i.plantPath)})`, left: 150 + (80 * i.x) + 'px', top: 70 + (100 * i.y) + 'px' }">
         </div>
         <!-- 生成植物的生成物 -->
         <div v-show="interaction.product[0]" class="product" v-for="i in interaction.product" :key="i.identifier"
@@ -27,12 +27,19 @@
             <!-- 生成僵尸 -->
             <template v-if="interaction.corpse.entrance[0]">
                 <div class="corpse" v-for="i in interaction.corpse.entrance" :key="i.identifier"
-                    :style="{ left: i.x + 'px', top: i.y + 'px', background: `url(${getImageUrl(i.path)})` }"></div>
+                    :style="{ left: i.x + 'px', top: i.y + 'px', background: `url(${getImageUrl(i.path)})`, width: i.long + 'px' }">
+                </div>
             </template>
         </div>
         <!-- 关卡失败提示语 -->
         <div @click="gameback" class="fail" v-if="interaction.success == false"></div>
-
+        <!-- 胜利弹窗 -->
+        <a-modal v-model:visible="interaction.success" align-center hide-cancel closable ok-text="返回主菜单" @ok="gameback"
+            @cancel="gameback">
+            <div class="success">恭喜通关</div>
+        </a-modal>
+        <!--  -->
+        <div class="win">胜利条件：击败{{ interaction.corpse.number }}/50只僵尸</div>
     </div>
 </template>
 <script setup>
@@ -147,8 +154,7 @@ const Main = setInterval(() => {//游戏运行函数
                 for (let k in usestore.corpse) {
                     if (usestore.corpse[k].id == random) {
                         const corpseY = getNumber(4, 0)
-                        interaction.corpse.entrance.push({ ...usestore.corpse[k], x: 850, y: corpseY * 100 + 10, perpendicular: corpseY, identifier: _.uniqueId(), })
-                        interaction.corpse.number++
+                        interaction.corpse.entrance.push({ ...usestore.corpse[k], move: true, x: 850, y: corpseY * 100 + 10, perpendicular: corpseY, identifier: _.uniqueId(), })
                     }
                 }
             }
@@ -157,11 +163,37 @@ const Main = setInterval(() => {//游戏运行函数
     // 僵尸移动以及失败控制
     if (interaction.corpse.entrance[0]) {
         for (let i in interaction.corpse.entrance) {
-                interaction.corpse.entrance[i].x -= 1.5
-                if (interaction.corpse.entrance[i].x <= -20) {
-                    interaction.success = false
-                    clearInterval(Main)
+            for (let j in interaction.plant) {
+                if (interaction.plant[j].y == interaction.corpse.entrance[i].perpendicular && 80 * interaction.plant[j].x + 150 >= interaction.corpse.entrance[i].x && interaction.corpse.entrance[i].x >= 80 * interaction.plant[j].x + 150 - interaction.corpse.entrance[i].long / 4 * 3) {
+                    if (interaction.corpse.entrance[i].normalPath && interaction.corpse.entrance[i].path == interaction.corpse.entrance[i].normalPath) {
+                        interaction.corpse.entrance[i].path = interaction.corpse.entrance[i].normalFightPath
+                    } else {
+                        interaction.corpse.entrance[i].path = interaction.corpse.entrance[i].fightPath
+
+                    }
+                    interaction.plant[j].Blood -= interaction.corpse.entrance[i].fight
+                    interaction.corpse.entrance[i].move = false
+                    if (interaction.plant[j].Blood <= 0) {
+                        interaction.plant.splice(j, 1)
+                        interaction.corpse.entrance[i].move = true
+                        if (interaction.corpse.entrance[i].normalPath && interaction.corpse.entrance[i].path == interaction.corpse.entrance[i].normalFightPath) {
+                            interaction.corpse.entrance[i].path = interaction.corpse.entrance[i].normalPath
+                        } else {
+                            interaction.corpse.entrance[i].path = interaction.corpse.entrance[i].standPath
+                        }
+
+                    }
                 }
+            }
+            // 是否能够移动
+            if (interaction.corpse.entrance[i].move) {
+                interaction.corpse.entrance[i].x -= 1.5
+            }
+            // 僵尸进入屋子
+            if (interaction.corpse.entrance[i].x <= -20) {
+                interaction.success = false
+                clearInterval(Main)
+            }
         }
     }
 
@@ -175,7 +207,7 @@ const Main = setInterval(() => {//游戏运行函数
                     interaction.product.push({
                         kind: interaction.plant[i].kind,
                         perpendicular: interaction.plant[i].y,
-                        x: 150 + (85 * interaction.plant[i].x) - interaction.plant[i].x * 5,
+                        x: 150 + (80 * interaction.plant[i].x),
                         y: 70 + (100 * interaction.plant[i].y),
                         identifier: _.uniqueId("product_"),
                         path: interaction.plant[i].productPath,
@@ -185,20 +217,21 @@ const Main = setInterval(() => {//游戏运行函数
                 }
             } else if (interaction.plant[i].kind == "fight" && interaction.corpse.entrance[0]) {
                 for (let k in interaction.corpse.entrance) {
-                    if (interaction.corpse.entrance[k].perpendicular == interaction.plant[i].y) {
+                    if (interaction.corpse.entrance[k].perpendicular == interaction.plant[i].y && 80 * interaction.plant[i].x + 150 <= interaction.corpse.entrance[k].x) {
                         interaction.plant[i].time += 100
                         if (interaction.plant[i].time >= interaction.plant[i].interval) {
                             interaction.plant[i].time = 0
                             interaction.product.push({
                                 kind: interaction.plant[i].kind,
                                 perpendicular: interaction.plant[i].y,
-                                x: 150 + (85 * interaction.plant[i].x) - interaction.plant[i].x * 5,
+                                x: 150 + (80 * interaction.plant[i].x),
                                 y: 100 + (100 * interaction.plant[i].y),
                                 identifier: _.uniqueId("product_"),
                                 path: interaction.plant[i].productPath,
                                 long: interaction.plant[i].productWidth,
                                 tall: interaction.plant[i].productHeigth,
-                                fight: interaction.plant[i].aggressivity
+                                fight: interaction.plant[i].aggressivity,
+                                fatherX: 150 + (80 * interaction.plant[i].x),
                             })
                         }
                     }
@@ -219,7 +252,7 @@ const Main = setInterval(() => {//游戏运行函数
                     interaction.product.splice(i, 1)
                 } else {
                     for (let j in interaction.corpse.entrance) {
-                        if (interaction.corpse.entrance[j].perpendicular === interaction.product[i].perpendicular && interaction.product[i].x >= interaction.corpse.entrance[j].x + 80) {
+                        if (interaction.corpse.entrance[j].perpendicular === interaction.product[i].perpendicular && interaction.corpse.entrance[j].x > interaction.product[i].fatherX && interaction.product[i].x >= interaction.corpse.entrance[j].x + 80) {
                             if (interaction.corpse.entrance[j].ornaments > 0) {
                                 interaction.corpse.entrance[j].ornaments -= interaction.product[i].fight
                                 interaction.product.splice(i, 1)
@@ -231,7 +264,7 @@ const Main = setInterval(() => {//游戏运行函数
                                 interaction.product.splice(i, 1)
                                 switch (true) {
                                     case (interaction.corpse.entrance[j].blood > 0 && interaction.corpse.entrance[j].blood <= 20): interaction.corpse.entrance[j].path = interaction.corpse.entrance[j].diePath; break
-                                    case (interaction.corpse.entrance[j].blood <= 0): interaction.corpse.entrance.splice(j, 1); break;
+                                    case (interaction.corpse.entrance[j].blood <= 0): interaction.corpse.entrance.splice(j, 1), interaction.corpse.number++; break;
                                 }
                             }
 
@@ -242,6 +275,10 @@ const Main = setInterval(() => {//游戏运行函数
 
             }
         }
+    }
+    if (interaction.corpse.number = 50) {
+        interaction.success = true
+        clearInterval(Main)
     }
 }, 100)
 const getImageUrl = (path) => {
@@ -323,7 +360,6 @@ onBeforeRouteLeave((to, from) => {
 
 .corpse {
     position: absolute;
-    width: 166px;
     height: 144px;
     transition: all 0.1s;
     z-index: 7;
@@ -338,4 +374,18 @@ onBeforeRouteLeave((to, from) => {
     width: 100%;
     height: 100%;
 }
-</style>
+
+.success {
+    text-align: center;
+    font-size: 24px;
+    letter-spacing: 2px;
+}
+
+.win {
+    position: absolute;
+    right: 10px;
+    bottom: 5px;
+    letter-spacing: 2px;
+    font-size: 16px;
+    font-weight: 700;
+}</style>

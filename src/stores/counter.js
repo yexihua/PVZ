@@ -50,27 +50,29 @@ export const useStore = defineStore('counter', () => {
     normalZombie: {
       id: 1,
       name: '普通僵尸',
-      path: 'corpse/Zombie/Zombie.gif',
-      standPath:'corpse/Zombie/Zombie.gif',
-      fightPath:'corpse/Zombie/ZombieAttack.gif',
-      diePath:'corpse/Zombie/ZombieLostHead.gif',
+      path: 'corpse/Zombie/Zombie.gif',//正在进行的路径
+      standPath:'corpse/Zombie/Zombie.gif',//行走路径
+      fightPath:'corpse/Zombie/ZombieAttack.gif',//攻击路径
+      diePath:'corpse/Zombie/ZombieLostHead.gif',//死亡路径
       fight:10,//攻击力，单位为0.1s
       blood:200,//血量
       ornaments:0,//饰品血量
-      velocity:17//移速，单位s
+      velocity:17,//移速，单位s
+      long:166
     },
     ConeheadZombie: {
       id: 2,
       name: '路障僵尸',
       path: 'corpse/ConeheadZombie/ConeheadZombie.gif',
-      normalPath:'corpse/Zombie/Zombie.gif',
+      normalPath:'corpse/Zombie/Zombie.gif',//正常状态路径
+      normalFightPath:'corpse/Zombie/ZombieAttack.gif',//正常状态的攻击路径
       standPath:'corpse/ConeheadZombie/ConeheadZombie.gif',
       fightPath:'corpse/ConeheadZombie/ConeheadZombieAttack.gif',
       diePath:'corpse/Zombie/ZombieLostHead.gif',
       fight:10,//攻击力，单位为0.1s
       blood:200,//血量
       ornaments:370,//饰品血量
-
+      long:166
 
 
     },
